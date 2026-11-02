@@ -2,8 +2,8 @@ group = "app.ample"
 
 patches {
     about {
-        name = "Ample Patches"
-        description = "Patches for Morphe"
+        name = "DCCon Tagger Patches"
+        description = "Ample Patches for Morphe, plus DCCon search for DCInside"
         source = "git@github.com:AmpleReVanced/revanced-patches"
         author = "Ample"
         contact = "na"
@@ -29,6 +29,10 @@ dependencies {
 
     // Android API stubs defined here.
     compileOnly(project(":patches:stub"))
+
+    // Local APK patching (patchApk task).
+    testImplementation("app.morphe:morphe-patcher:${libs.versions.morphe.patcher.get()}")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.2")
 }
 
 tasks {
@@ -39,6 +43,15 @@ tasks {
 
         classpath = sourceSets["main"].runtimeClasspath
         mainClass.set("app.morphe.patches.util.resource.CheckStringResourcesKt")
+    }
+
+    // Patches an APK locally: ./gradlew :patches:patchApk --args="<apk> <patches.mpp> <output.apk> [keystore storePass alias keyPass]"
+    register<JavaExec>("patchApk") {
+        description = "Patches an APK on this machine with the default patch selection"
+
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("app.morphe.tools.LocalPatcherKt")
+        maxHeapSize = "4g"
     }
 
     register<JavaExec>("generatePatchesList") {
