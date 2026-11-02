@@ -1,3 +1,20 @@
+# DCCon Tagger patches (fork of Ample Patches)
+
+A fork of [AmpleReVanced/revanced-patches](https://github.com/AmpleReVanced/revanced-patches) that adds DCCon (디시콘) search to the DCInside Android app 5.3.20. A GitHub Action merges upstream's `main` every week, so the Ample patches stay current.
+
+What this fork adds:
+
+- **DCCon search** patch: a 🔍 button in the DCCon picker that finds DCCons by AI tags (text in the image, emotion, situation), synced from a Nextcloud folder. Long-press a result to edit its tags. The app also uploads the list of owned DCCons (`catalog.json`) for AI agents to tag.
+- **Fix DCCon list loading** patch: with many DCCon packs, DCInside's server returns an empty list after 30 seconds and the picker says 사용 가능한 디시콘이 없습니다. This patch loads the list one page at a time instead.
+- `./gradlew :patches:patchApk`: patches and signs an APK on your computer for testing, without Morphe Manager (`patches/src/test/kotlin/app/morphe/tools/LocalPatcher.kt`).
+- [`dccon-tagger/`](dccon-tagger): the DCCon Tagger userscript (search in mobile Firefox and a local-AI tagger for the PC) and the tools that let Claude Code or Codex tag DCCons. Its README covers setup for everything.
+
+The patches are in `patches/src/main/kotlin/app/revanced/patches/dcinside/layout/dccon/` and the code they add to the app is in `extensions/dcinside/src/main/java/app/revanced/extension/dcinside/` (`dcconsearch/` and `patches/Dccon*.java`).
+
+Everything below is the original Ample README.
+
+---
+
 # 👋🧩 Ample Patches
 
 &nbsp;
