@@ -1,0 +1,53 @@
+# Keeps this fork's main up to date with AmpleReVanced/revanced-patches (their releases land on main).
+# A clean merge is pushed to main directly. If the merge conflicts, upstream's main is pushed to an
+# upstream-sync/<date> branch and a pull request is opened, so the conflict can be resolved on GitHub.
+
+name: Sync with upstream
+
+on:
+  schedule:
+    - cron: "0 3 * * 1" # Mondays 03:00 UTC (12:00 KST)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    if: github.repository != 'AmpleReVanced/revanced-patches'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Merge upstream main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add upstream https://github.com/AmpleReVanced/revanced-patches.git
+          git fetch --no-tags upstream main
+
+          if git merge-base --is-ancestor upstream/main HEAD; then
+            echo "Already up to date with upstream."
+            exit 0
+          fi
+
+          if git merge --no-edit -m "chore: Merge upstream main" upstream/main; then
+            git push origin main
+            echo "Merged upstream changes into main."
+            exit 0
+          fi
+
+          git merge --abort
+          branch="upstream-sync/$(date -u +%Y-%m-%d)"
+          git push --force origin "upstream/main:refs/heads/$branch"
+          gh pr create --base main --head "$branch" \
+            --title "Merge upstream changes ($(date -u +%Y-%m-%d))" \
+            --body "Upstream's main conflicts with this fork's changes, so it could not be merged automatically. Resolve the conflicts in this pull request (or locally with \`git merge upstream/main\`), then merge it." \
+            || echo "A pull request for upstream changes is already open."
